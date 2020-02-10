@@ -16,7 +16,7 @@ class LinearRegression(torch.nn.Module):
         super(LinearRegression, self).__init__()
         self.linear = torch.nn.Linear(inputSize, outputSize)
 
-    def forward(self, x):
+    def forward(self, x, y):
         out = self.linear(x)
         return out
 
@@ -45,7 +45,7 @@ for epoch in range(epochs):
     optimizer.zero_grad()
 
     # get output from the model, given the inputs
-    outputs = model(inputs)
+    outputs = model(inputs, inputs)
 
     # get loss for the predicted output
     loss = criterion(outputs, labels)
@@ -60,9 +60,9 @@ for epoch in range(epochs):
 
 with torch.no_grad(): # we don't need gradients in the testing phase
     if torch.cuda.is_available():
-        predicted = model(Variable(torch.from_numpy(x_train).cuda())).cpu().data.numpy()
+        predicted = model(Variable(torch.from_numpy(x_train).cuda()), Variable(torch.from_numpy(x_train).cuda())).cpu().data.numpy()
     else:
-        predicted = model(Variable(torch.from_numpy(x_train))).data.numpy()
+        predicted = model(Variable(torch.from_numpy(x_train)), Variable(torch.from_numpy(x_train).cuda())).data.numpy()
     print(predicted)
 
 plt.clf()

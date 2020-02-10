@@ -1,5 +1,11 @@
+import math
+
+import numpy as np
 import torch
 import torch.nn as nn
+import random
+
+from junk_scripts.view_data import get_data
 
 
 class LSTM1(torch.nn.Module):
@@ -27,5 +33,37 @@ class LSTM1(torch.nn.Module):
         out = self.final_activation()(val)
         return out
 
+data = get_data("train")
 
+model = LSTM1()
+learningRate = 0.01
+epochs = 10
+criterion = torch.nn.MSELoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=learningRate)
+batch_size = 100
 
+for epoch in range(epochs):
+    random.shuffle(data)
+    losses = []
+    for batch in range(len(data)/batch_size-1):
+        # Converting inputs and labels to Variable
+        eng = [row[0] for row in data[batch*batch_size:(batch+1)*batch_size]]
+        ger = [row[1] for row in data[batch * batch_size:(batch + 1) * batch_size]]
+        labels = [row[2] for row in data[batch*batch_size:(batch+1)*batch_size]]
+
+        # Clear gradient buffers because we don't want any gradient from previous epoch to carry forward, dont want to cummulate gradients
+        optimizer.zero_grad()
+
+        # get output from the model, given the inputs
+        outputs = model(eng, ger)
+
+        # get loss for the predicted output
+        loss = criterion(outputs, labels)
+        losses.append(loss)
+        # get gradients w.r.t to parameters
+        loss.backward()
+
+        # update parameters
+        optimizer.step()
+
+    print('epoch {}, loss {}'.format(epoch, np.mean(losses)))
