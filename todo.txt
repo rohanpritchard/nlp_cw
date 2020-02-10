@@ -1,3 +1,5 @@
 - look at learning an lstm initial hidden state.
 - use nltk POS tagger to figure out what to lowercase.
 - get pretrained embeddings.
+- add densefeatures (like if it has common translation words etc).
+- add densefeatures like grammatical structure checks. 
