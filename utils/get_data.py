@@ -1,9 +1,13 @@
 import string
+import fasttext
+import fasttext.util
+import pickle
+
 import nltk
 import nltk.tokenize as tokenizer
 import numpy as np
 from torch import Tensor
-
+import spacy
 
 def get_data(set):
     source = "./en-de/%s.ende.src" % set
@@ -30,3 +34,37 @@ def normalize(sentences):
     # Takes list of list of tokens
     maximum = max([len(s) for s in sentences])
     return zip(*[(s + ([0]*(maximum-len(s))), len(s)) for s in sentences])
+
+def normalize_embeddings(sentences):
+    maximum = max([len(s) for s in sentences])
+
+    array = np.zeros((len(sentences), maximum, 300), dtype=np.float)
+    lens = []
+    for i, s in enumerate(sentences):
+        lens.append(len(s))
+        for j, t in enumerate(s):
+            array[i,j] = t
+    return array, lens
+    #return zip(*[(s + ([[0]*300]*(maximum-len(s))), len(s)) for s in sentences])
+
+class Embedder:
+    def __init__(self):
+        self.en = spacy.load("en_core_web_md")
+        self.ge = spacy.load("de_core_news_md")
+
+    def embed_en(self, sentence):
+        return [t.vector for t in self.en(sentence)]
+
+    def embed_ge(self, sentence):
+        return [t.vector for t in self.ge(sentence)]
+
+'''
+print("Loading embedder...")
+embedder = Embedder()
+
+print("Getting data...")
+data = get_data("train")
+data = [(embedder.embed_en(eng), embedder.embed_ge(ger), score) for eng, ger, score in data]
+with open("embedded_data.txt", 'wb') as f:
+    pickle.dump(data, f)
+'''
