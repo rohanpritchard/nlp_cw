@@ -96,7 +96,7 @@ for epoch in range(epochs):
         # update parameters
         optimizer.step()
 
-    print('\nepoch {}, loss {}'.format(epoch, np.mean(losses)))
+    print('\nepoch {}, loss {}'.format(epoch + 1, np.mean(losses)))
 
 plt.ioff()
 fig = plt.figure()
