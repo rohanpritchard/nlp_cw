@@ -67,9 +67,11 @@ optimizer = torch.optim.Adam(model.parameters())
 batch_size = 20
 print("Starting training...")
 losses = []
+pearsons = []
 maes = []
 for epoch in range(epochs):
     elosses = []
+    epearsons = []
     emaes = []
     random.shuffle(data)
     for batch in range(int(len(data)/batch_size)-1):
@@ -90,6 +92,14 @@ for epoch in range(epochs):
 
         # get loss for the predicted output
         loss = criterion(outputs, labels)
+
+        vx = outputs - torch.mean(outputs)
+        vy = labels - torch.mean(labels)
+
+        cost = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx ** 2)) * torch.sqrt(torch.sum(vy ** 2)))
+        epearsons.append(cost.item())
+        pearsons.append(cost.item())
+
         mae = (outputs-labels).abs().mean()
         maes.append(mae.item())
         emaes.append(mae.item())
@@ -102,7 +112,7 @@ for epoch in range(epochs):
         # update parameters
         optimizer.step()
 
-    print('\nepoch {}, loss {}, mae {}'.format(epoch, np.mean(elosses), np.mean(emaes)))
+    print('\nepoch {}, loss {}, mae {}, pearson {}'.format(epoch, np.mean(elosses), np.mean(emaes), np.mean(epearsons)))
 
 plt.ioff()
 fig = plt.figure()
