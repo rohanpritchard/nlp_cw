@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import random
 import matplotlib.pyplot as plt
-import fasttext.util
 import pickle
 
 from torch import Tensor
@@ -39,7 +38,7 @@ class LSTM2(torch.nn.Module):
 
         #print("Eng hidden:", eng_hidden[0].shape)
 
-        cat = torch.cat((eng_hidden[0], ger_hidden[0]), -1).view(-1, self.concat_size)
+        cat = torch.cat((eng_hidden[0][0], ger_hidden[0][0]), -1).view(-1, self.concat_size)
 
         val = cat
         for l in self.linears:

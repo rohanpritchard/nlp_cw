@@ -1,13 +1,12 @@
 import string
-import fasttext
-import fasttext.util
 import pickle
 
 import nltk
 import nltk.tokenize as tokenizer
 import numpy as np
-from torch import Tensor
+from torch import Tensor, FloatTensor
 import spacy
+
 
 def get_data(set):
     source = "./en-de/%s.ende.src" % set
@@ -64,7 +63,16 @@ embedder = Embedder()
 
 print("Getting data...")
 data = get_data("train")
-data = [(embedder.embed_en(eng), embedder.embed_ge(ger), score) for eng, ger, score in data]
-with open("embedded_data.txt", 'wb') as f:
+print("generating similarities")
+temp = []
+count = 0
+for eng, ger, score in data:
+    temp.append(get_similarity([eng], [ger])[0])
+    count += 1
+    print(count)
+
+data = FloatTensor(temp)
+print("generated similarities")
+with open("similarities.txt", 'wb') as f:
     pickle.dump(data, f)
 '''
