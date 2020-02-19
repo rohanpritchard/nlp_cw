@@ -7,11 +7,17 @@ import numpy as np
 from torch import Tensor, FloatTensor
 import spacy
 
+# from models.universal_sentence_encoding import get_similarity
 
-def get_data(set):
-    source = "./en-de/%s.ende.src" % set
-    mt = "./en-de/%s.ende.mt" % set
-    scores = "./en-de/%s.ende.scores" % set
+def get_data(set, german=True):
+    if german:
+        source = "./en-de/%s.ende.src" % set
+        mt = "./en-de/%s.ende.mt" % set
+        scores = "./en-de/%s.ende.scores" % set
+    else:
+        source = "./en-zh/%s.enzh.src" % set
+        mt = "./en-zh/%s.enzh.mt" % set
+        scores = "./en-zh/%s.enzh.scores" % set
     with open(source, "r", encoding='utf-8') as source, open(mt, "r", encoding='utf-8') as mt, open(scores, "r", encoding='utf-8') as scores:
         return list(zip(source.readlines(), mt.readlines(), [float(i) for i in scores.readlines()]))
 
@@ -62,17 +68,20 @@ print("Loading embedder...")
 embedder = Embedder()
 
 print("Getting data...")
-data = get_data("train")
+data = get_data("train", german=False)
 print("generating similarities")
 temp = []
 count = 0
 for eng, ger, score in data:
+    print(f"getting similarity {count}")
     temp.append(get_similarity([eng], [ger])[0])
     count += 1
     print(count)
+    if count == 20:
+        break
 
 data = FloatTensor(temp)
 print("generated similarities")
-with open("similarities.txt", 'wb') as f:
+with open("similarities_zh.txt", 'wb') as f:
     pickle.dump(data, f)
 '''
