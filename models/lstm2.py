@@ -7,6 +7,7 @@ import torch.nn as nn
 import random
 import matplotlib.pyplot as plt
 import pickle
+from scipy.stats.stats import pearsonr
 
 from torch import Tensor
 
@@ -55,6 +56,8 @@ class LSTM2(torch.nn.Module):
 print("Getting data...")
 with open("embedded_data.train", "rb") as f:
     data = pickle.load(f)
+with open("embedded_data.dev", "rb") as f:
+    val = pickle.load(f)
 print("Tokenized data")
 
 model = LSTM2().float()
@@ -112,6 +115,12 @@ for epoch in range(epochs):
         optimizer.step()
 
     print('\nepoch {}, loss {}, mae {}, pearson {}'.format(epoch, np.mean(elosses), np.mean(emaes), np.mean(epearsons)))
+    eng_normalized, eng_len = normalize_embeddings([row[0] for row in val])
+    ger_normalized, ger_len = normalize_embeddings([row[1] for row in val])
+    eng = torch.tensor(eng_normalized)
+    ger = torch.tensor(ger_normalized)
+    labels = torch.tensor([row[2] for row in val]).resize(len(val), 1)
+    print("PEARSON", pearsonr(outs, labels))
 
 plt.ioff()
 fig = plt.figure()
