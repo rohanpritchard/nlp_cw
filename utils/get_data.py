@@ -63,6 +63,7 @@ class Embedder:
         # DOESN'T WORK
         return self.multi(sentence)
 
+'''
 print("Loading embedder...")
 embedder = Embedder()
 
@@ -80,3 +81,4 @@ for eng, ger, score in data:
 
 with open("embedded_data.txt", 'wb') as f:
     pickle.dump(embedded, f)
+'''

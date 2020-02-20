@@ -23,19 +23,26 @@ class Net(torch.nn.Module):
 
 
 print("Getting data...")
-with open("embedded_data.txt", "rb") as f:
-    data = pickle.load(f)
+with open("embedded_data.train", "rb") as f:
+    train = pickle.load(f)
+with open("embedded_data.dev", "rb") as f:
+    dev = pickle.load(f)
 print("Tokenized data")
 
 data_averaged = []
-for e, c, l in data:
+for e, c, l in train:
     e_avg = np.mean(e, axis=0)
     c_avg = np.mean(c, axis=0)
     data_averaged.append((np.array(list(e_avg)+list(c_avg)), l))
 
+val = []
+for e, c, l in dev:
+    e_avg = np.mean(e, axis=0)
+    c_avg = np.mean(c, axis=0)
+    val.append((np.array(list(e_avg)+list(c_avg)), l))
+
 print("Data size:", len(data_averaged))
-val = data_averaged[-1000:]
-data_averaged = data_averaged[:-1000]
+data_averaged = data_averaged
 
 model = Net([(600, 1000)]).float()
 print("Model loaded.")

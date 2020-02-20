@@ -53,17 +53,17 @@ class LSTM2(torch.nn.Module):
 
 
 print("Getting data...")
-with open("embedded_data.txt", "rb") as f:
+with open("embedded_data.train", "rb") as f:
     data = pickle.load(f)
 print("Tokenized data")
 
 model = LSTM2().float()
 print("Model loaded.")
-learningRate = 0.01
+learningRate = 0.001
 epochs = 20
 criterion = torch.nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters())
-batch_size = 20
+optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
+batch_size = 200
 print("Starting training...")
 losses = []
 pearsons = []
@@ -81,7 +81,7 @@ for epoch in range(epochs):
         ger_normalized, ger_len = normalize_embeddings([row[1] for row in data[batch*batch_size:(batch+1)*batch_size]])
         eng = torch.tensor(eng_normalized)
         ger = torch.tensor(ger_normalized)
-        labels = torch.tensor([row[2] for row in data[batch*batch_size:(batch+1)*batch_size]])
+        labels = torch.tensor([row[2] for row in data[batch*batch_size:(batch+1)*batch_size]]).resize(batch_size, 1)
 
         # Clear gradient buffers because we don't want any gradient from previous epoch to carry forward, dont want to cummulate gradients
         optimizer.zero_grad()
