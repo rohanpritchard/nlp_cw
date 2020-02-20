@@ -1,23 +1,18 @@
 import string
+import fasttext
+import fasttext.util
 import pickle
 
 import nltk
 import nltk.tokenize as tokenizer
 import numpy as np
-from torch import Tensor, FloatTensor
+from torch import Tensor
 import spacy
 
-# from models.universal_sentence_encoding import get_similarity
-
-def get_data(set, german=True):
-    if german:
-        source = "./en-de/%s.ende.src" % set
-        mt = "./en-de/%s.ende.mt" % set
-        scores = "./en-de/%s.ende.scores" % set
-    else:
-        source = "./en-zh/%s.enzh.src" % set
-        mt = "./en-zh/%s.enzh.mt" % set
-        scores = "./en-zh/%s.enzh.scores" % set
+def get_data(set):
+    source = "./en-zh/%s.ende.src" % set
+    mt = "./en-zh/%s.ende.mt" % set
+    scores = "./en-zh/%s.ende.scores" % set
     with open(source, "r", encoding='utf-8') as source, open(mt, "r", encoding='utf-8') as mt, open(scores, "r", encoding='utf-8') as scores:
         return list(zip(source.readlines(), mt.readlines(), [float(i) for i in scores.readlines()]))
 
@@ -56,6 +51,7 @@ class Embedder:
     def __init__(self):
         self.en = spacy.load("en_core_web_md")
         self.ge = spacy.load("de_core_news_md")
+        self.multi = spacy.load("xx_ent_wiki_sm")
 
     def embed_en(self, sentence):
         return [t.vector for t in self.en(sentence)]
@@ -63,25 +59,24 @@ class Embedder:
     def embed_ge(self, sentence):
         return [t.vector for t in self.ge(sentence)]
 
-'''
+    def embed_multi(self, sentence):
+        # DOESN'T WORK
+        return self.multi(sentence)
+
 print("Loading embedder...")
 embedder = Embedder()
 
 print("Getting data...")
-data = get_data("train", german=False)
-print("generating similarities")
-temp = []
-count = 0
+data = get_data("train")[:20]
+embedded = []
+eng_counts = 0
+ger_counts = 0
 for eng, ger, score in data:
-    print(f"getting similarity {count}")
-    temp.append(get_similarity([eng], [ger])[0])
-    count += 1
-    print(count)
-    if count == 20:
-        break
+    eng_embedded = embedder.embed_en(eng)
+    ger_embedded = embedder.embed_ge(ger)
+    unrecognized_eng = [np.count_nonzero(x) == 0 for x in eng_embedded]
+    unrecognized_ger = [np.count_nonzero(x) == 0 for x in ger_embedded]
+    embedded.append((eng_embedded, ger_embedded, score))
 
-data = FloatTensor(temp)
-print("generated similarities")
-with open("similarities_zh.txt", 'wb') as f:
-    pickle.dump(data, f)
-'''
+with open("embedded_data.txt", 'wb') as f:
+    pickle.dump(embedded, f)
