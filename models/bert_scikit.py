@@ -5,15 +5,16 @@ import sklearn.neural_network as nn
 from scipy.stats.stats import pearsonr
 
 print("Getting data...")
-with open("embedded_bert.train", "rb") as f:
+with open("bert_encoded", "rb") as f:
     data = pickle.load(f)
 print("Tokenized data")
 
 data_averaged = []
 for e, c, l in data:
-    data_averaged.append((np.array(list(e)+list(c)), l))
+    data_averaged.append((np.array(list(e[0])+list(c[0])), l))
 
-model = nn.MLPRegressor(hidden_layer_sizes=(5,))
+print("Train!")
+model = nn.MLPRegressor(hidden_layer_sizes=(500,), verbose=True)
 train = data_averaged[:-1000]
 test = data_averaged[-1000:]
 X = [x[0] for x in train]
