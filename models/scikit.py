@@ -5,7 +5,7 @@ import sklearn.neural_network as nn
 from scipy.stats.stats import pearsonr
 
 print("Getting data...")
-with open("embedded_data.txt", "rb") as f:
+with open("embedded_data.train", "rb") as f:
     data = pickle.load(f)
 print("Tokenized data")
 

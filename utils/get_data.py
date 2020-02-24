@@ -7,9 +7,6 @@ import nltk
 import nltk.tokenize as tokenizer
 import numpy as np
 from torch import Tensor
-import spacy
-
-from models.universal_sentence_encoding import get_similarity, get_embedding
 
 def get_data(set, german=True):
     if german:

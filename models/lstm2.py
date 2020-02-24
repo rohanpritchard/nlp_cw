@@ -119,8 +119,9 @@ for epoch in range(epochs):
     ger_normalized, ger_len = normalize_embeddings([row[1] for row in val])
     eng = torch.tensor(eng_normalized)
     ger = torch.tensor(ger_normalized)
-    labels = torch.tensor([row[2] for row in val]).resize(len(val), 1)
-    print("PEARSON", pearsonr(outs, labels))
+    labels = torch.tensor([row[2] for row in val])
+    outputs = model(eng.float(), eng_len, ger.float(), ger_len).detach().numpy().flatten()
+    print("PEARSON", pearsonr(outputs, labels))
 
 plt.ioff()
 fig = plt.figure()
