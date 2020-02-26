@@ -8,18 +8,6 @@ import nltk.tokenize as tokenizer
 import numpy as np
 from torch import Tensor
 
-def get_data(set, german=True):
-    if german:
-        source = "./en-de/%s.ende.src" % set
-        mt = "./en-de/%s.ende.mt" % set
-        scores = "./en-de/%s.ende.scores" % set
-    else:
-        source = "./en-zh/%s.enzh.src" % set
-        mt = "./en-zh/%s.enzh.mt" % set
-        scores = "./en-zh/%s.enzh.scores" % set
-    with open(source, "r", encoding='utf-8') as source, open(mt, "r", encoding='utf-8') as mt, open(scores, "r", encoding='utf-8') as scores:
-        return list(zip(source.readlines(), mt.readlines(), [float(i) for i in scores.readlines()]))
-
 def get_word_to_index(sentences):
     vocab = set()
     for s in sentences:
@@ -51,21 +39,6 @@ def normalize_embeddings(sentences):
     return array, lens
     #return zip(*[(s + ([[0]*300]*(maximum-len(s))), len(s)) for s in sentences])
 
-class Embedder:
-    def __init__(self):
-        self.en = spacy.load("en_core_web_md")
-        self.ge = spacy.load("de_core_news_md")
-        self.multi = spacy.load("xx_ent_wiki_sm")
-
-    def embed_en(self, sentence):
-        return [t.vector for t in self.en(sentence)]
-
-    def embed_ge(self, sentence):
-        return [t.vector for t in self.ge(sentence)]
-
-    def embed_multi(self, sentence):
-        # DOESN'T WORK
-        return self.multi(sentence)
 
 '''
 print("Loading embedder...")

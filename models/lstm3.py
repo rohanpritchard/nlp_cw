@@ -10,7 +10,7 @@ import pickle
 
 from torch import Tensor
 
-from utils.get_data import get_word_to_index, tokenize, get_data, normalize, Embedder, normalize_embeddings
+from utils.tools import get_word_to_index, tokenize, get_data, normalize, Embedder, normalize_embeddings
 
 SENTENCE_ENCODING_DIFFERENCE_NODES = 1
 

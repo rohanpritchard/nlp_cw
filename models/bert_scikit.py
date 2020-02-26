@@ -5,29 +5,22 @@ import sklearn.neural_network as nn
 from scipy.stats.stats import pearsonr
 
 print("Getting data...")
-with open("bert_encoded", "rb") as f:
+with open("bert_encoded_train", "rb") as f:
     data = pickle.load(f)
-with open("bert_encoded_val", "rb") as f:
+with open("bert_encoded_dev", "rb") as f:
     data1 = pickle.load(f)
 print("Tokenized data")
 
-data_averaged = []
-for e, c, l in data:
-    data_averaged.append((np.array(list(e[0])+list(c[0])), l))
+e, c, y = data
+x = np.concatenate((e, c), axis=1)
 
-data_averaged1 = []
-for e, c, l in data1:
-    data_averaged1.append((np.array(list(e[0])+list(c[0])), l))
+e, c, y_val = data1
+x_val = np.concatenate((e, c), axis=1)
 
 print("Train!")
-model = nn.MLPRegressor(hidden_layer_sizes=(500,), verbose=True)
-train = data_averaged
-test = data_averaged1
-X = [x[0] for x in train]
-y = [x[1] for x in train]
-X_test = [x[0] for x in test]
-y_test = [x[1] for x in test]
-model.fit(X, y)
-my_y = model.predict(X_test)
+model = nn.MLPRegressor(hidden_layer_sizes=(600,), verbose=True)
 
-print("PEARSON:", pearsonr(y_test, my_y))
+model.fit(x, y)
+my_y = model.predict(x_val)
+
+print("PEARSON:", pearsonr(y_val, my_y))

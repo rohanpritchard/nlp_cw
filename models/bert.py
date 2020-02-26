@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from bert_serving.client import BertClient
 
-from utils.get_data import get_data
+from utils.tools import get_data
 from scipy.stats.stats import pearsonr
 
 bc = BertClient()
@@ -14,22 +14,21 @@ c = bc.encode(['汉密尔顿在乔治 · 华盛顿的选任统治下监督他的
                '2013 年 12 月 29 日 ， 柏格林通过他的 LE7ELS 播客第 19 集 ， 推出了他的新的 "我的梦想" ， 其中有奥黛拉 · 梅的歌声。',
                '温切斯劳斯于 1305 年向巴伐利亚的奥托投降.'])
 
-data = get_data("dev", german=False)
-out = []
-js = []
-ss = []
+name = "train"
+data = get_data(name, german=False)
 print("starting looop")
+es = []
+cs = []
+ss = []
 for e, c, s in data:
-  print(e)
-  ee = bc.encode([e])
-  ec = bc.encode([c])
-  out.append((ee, ec, s))
-  d = np.abs(np.subtract(ee, ec))
-  j = np.sum(d, axis=1)[0]
-  js.append(j)
+  es.append(e)
+  cs.append(c)
   ss.append(s)
 
-with open("bert_encoded", "wb") as file:
+print("encode")
+ee = bc.encode(es)
+ec = bc.encode(cs)
+ss = np.array(ss)
+out = (ee, ec, ss)
+with open("bert_encoded_"+name, "wb") as file:
   pickle.dump(out, file)
-
-print("PEARSON:", pearsonr(np.array(ss), np.array(js)))
