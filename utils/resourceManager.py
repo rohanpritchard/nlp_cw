@@ -1,15 +1,11 @@
 import atexit
 import pickle
-import signal
 import subprocess
 from os import path
 import os
 
-from bert_serving.client import BertClient
-
-import fastText_multilingual.fasttext as ft
 import nltk.tokenize as tokenizer
-import jieba
+
 
 
 resources_dir = "./resources"
@@ -32,8 +28,13 @@ def get_data(set, language):
 
 class BertAsAServiceEmbedder:
   _process = None
+  _imported = False
 
   def __init__(self):
+    if not BertAsAServiceEmbedder._imported:
+      from bert_serving.client import BertClient
+      BertAsAServiceEmbedder._imported = True
+
     if BertAsAServiceEmbedder._process is None:
       BertAsAServiceEmbedder._process = subprocess.Popen(["bert-serving-start", "-model_dir=./bert/uncased_L-12_H-768_A-12", "-num_worker=4", "-max_seq_len=100"])
       atexit.register(BertAsAServiceEmbedder.kill)
@@ -52,7 +53,17 @@ class BertAsAServiceEmbedder:
 
 class FastTextEmbedder:
   _loaded = {}
+  _imported = False
+  _imported_jeiba = False
+
   def __init__(self, language):
+    if not FastTextEmbedder._imported:
+      import fastText_multilingual.fasttext as ft
+      FastTextEmbedder._imported = True
+
+    if not FastTextEmbedder._imported_jeiba and language == "zh":
+      import jieba
+      FastTextEmbedder._imported_jeiba = True
     embedder = "wiki.{}.align.vec".format(language)
     if embedder not in FastTextEmbedder._loaded:
       FastTextEmbedder._loaded[embedder] = ft.FastVector(vector_file=path.join(resources_dir, "FastText", embedder))
