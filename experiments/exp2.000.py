@@ -27,7 +27,7 @@ val_data = getEmbeddedResource("exp2", "FastText", "zh", "dev")
 print("Tokenized data")
 
 train = getAverage(data)
-model = nn.MLPRegressor(hidden_layer_sizes=(5,))
+model = nn.MLPRegressor(max_iter=4, hidden_layer_sizes=(5,), verbose=True)
 X = [x[0] for x in train]
 y = [x[1] for x in train]
 model.fit(X, y)
@@ -38,3 +38,5 @@ y_test = [x[1] for x in test]
 my_y = model.predict(X_test)
 
 print("PEARSON:", pearsonr(y_test, my_y))
+print("MSE", np.mean(np.power(my_y-y_test, 2)))
+print("MAE", np.mean(np.abs(my_y-y_test)))

@@ -22,11 +22,11 @@ print("Tokenized data")
 
 model = LSTM(lstms_in_out=((300, 100), (300, 100)), linear_layers=(100,50), out_size=1, hidden_activation=nn.ReLU, final_activation=None).float()
 print("Model loaded.")
-learningRate = 0.001
-epochs = 40
+learningRate = 0.01
+epochs = 50
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
-batch_size = 200
+batch_size = 100
 print("Starting training...")
 stats = StatsManager("exp4.000")
 

@@ -16,7 +16,7 @@ from utils.tools import normalize_embeddings
 
 
 class CNN(torch.nn.Module):
-  def __init__(self, padding_index=0, lstms_in_out=((300, 100), (300, 100)), linear_layers=(100, 50), out_size=1,
+  def __init__(self, linear_layers=(100,50), out_size=1,
                hidden_activation=nn.ReLU, final_activation=None):
     super(CNN, self).__init__()
     self.final_activation = final_activation
@@ -57,11 +57,11 @@ print("Tokenized data")
 
 model = CNN().float()
 print("Model loaded.")
-learningRate = 0.001
-epochs = 20
+learningRate = 0.01
+epochs = 50
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
-batch_size = 50
+batch_size = 100
 print("Starting training...")
 stats = StatsManager("exp3.000")
 

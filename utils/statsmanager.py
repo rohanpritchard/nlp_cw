@@ -51,10 +51,13 @@ class StatsManager:
     self.emaes = []
 
   def computeValidation(self, outputs, labels):
-    outputs = outputs.detach()
-    labels = labels.detach()
-    p = pearsonr(np.asarray(outputs).flatten(), np.asarray(labels).flatten())
-    print("PEARSON:", p)
+    outputs = np.asarray(outputs.detach()).flatten()
+    labels = np.asarray(labels.detach()).flatten()
+    p = pearsonr(outputs, labels)
+    mse = np.mean(np.power(outputs-labels, 2))
+    mae = np.mean(np.abs(outputs-labels))
+
+    print("Validation:", "PEARSON:", p, "MSE:", mse, "MAE:", mae)
     self.pearsons_val.append(p[0])
 
   def plot(self):
@@ -73,7 +76,7 @@ class StatsManager:
     if self.name != None:
       location = path.join("./stats", self.name)
       os.makedirs(path.dirname(location), exist_ok=True)
-      fig.save_fig(location + ".png", dpi=fig.dpi)
+      fig.savefig(location + ".png", dpi=fig.dpi)
       with open(location, "a") as f:
         f.write("{} - Final Pearson {}".format(time.ctime(), self.pearsons_val[-1]))
 

@@ -36,7 +36,7 @@ print("Tokenized data")
 model = LSTM(a_vocab_size=len(a_to_index), b_vocab_size=len(b_to_index), padding_index=0, lstms_in_out=((5, 5), (5, 5)), linear_layers=(10, 5), out_size=1, hidden_activation=nn.ReLU, final_activation=None)
 print("Model loaded.")
 learningRate = 0.01
-epochs = 30
+epochs = 50
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learningRate)
 batch_size = 100

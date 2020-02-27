@@ -34,9 +34,11 @@ val_y = np.asarray(val_y)
 
 
 print("Train!")
-model = nn.MLPRegressor(hidden_layer_sizes=(60,), verbose=True)
+model = nn.MLPRegressor(max_iter=4, hidden_layer_sizes=(600, 600), verbose=True)
 
 model.fit(x, y)
 my_y = model.predict(val_x)
 
 print("PEARSON:", pearsonr(val_y, my_y))
+print("MSE", np.mean(np.power(my_y-val_y, 2)))
+print("MAE", np.mean(np.abs(my_y-val_y)))
