@@ -12,8 +12,8 @@ from scipy.stats.stats import pearsonr
 from utils.resourceManager import getEmbeddedResource
 
 print("Getting data...")
-data = getEmbeddedResource("exp5", "BertAsService", "zh", "train")
-val_data = getEmbeddedResource("exp5", "BertAsService", "zh", "dev")
+data = getEmbeddedResource("exp5", "BertAsService", "de", "train")
+val_data = getEmbeddedResource("exp5", "BertAsService", "de", "dev")
 print("Tokenized data")
 
 es,cs,y =[],[],[]
