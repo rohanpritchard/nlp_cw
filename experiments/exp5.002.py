@@ -12,8 +12,8 @@ from scipy.stats.stats import pearsonr
 from utils.resourceManager import getEmbeddedResource
 
 print("Getting data...")
-data = getEmbeddedResource("exp5", "BertAsService", "zh", "train")
-val_data = getEmbeddedResource("exp5", "BertAsService", "zh", "dev")
+data = getEmbeddedResource("exp5", "BertAsService", "zh", "train", subname="en-ch", MultiServerBert=("./bert/uncased_L-12_H-768_A-12","./bert/chinese_L-12_H-768_A-12"))
+val_data = getEmbeddedResource("exp5", "BertAsService", "zh", "dev", subname="en-ch", MultiServerBert=("./bert/uncased_L-12_H-768_A-12","./bert/chinese_L-12_H-768_A-12"))
 print("Tokenized data")
 
 es,cs,y =[],[],[]
@@ -34,7 +34,7 @@ val_y = np.asarray(val_y)
 
 
 print("Train!")
-model = nn.MLPRegressor(hidden_layer_sizes=(60,), verbose=True)
+model = nn.MLPRegressor(hidden_layer_sizes=(600,500, 50), verbose=True)
 
 model.fit(x, y)
 my_y = model.predict(val_x)

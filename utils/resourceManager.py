@@ -26,18 +26,17 @@ def get_data(set, language):
         return list(zip(source.readlines(), mt.readlines(), [float(i) for i in scores.readlines()]))
     return list(zip(source.readlines(), mt.readlines()))
 
+
 class BertAsAServiceEmbedder:
   _process = None
-  _imported = False
 
-  def __init__(self):
-    if not BertAsAServiceEmbedder._imported:
-      from bert_serving.client import BertClient
-      BertAsAServiceEmbedder._imported = True
+  def __init__(self, model_dir="./bert/multi_cased_L-12_H-768_A-12", autokill=True, **kwargs):
+    from bert_serving.client import BertClient
 
     if BertAsAServiceEmbedder._process is None:
-      BertAsAServiceEmbedder._process = subprocess.Popen(["bert-serving-start", "-model_dir=./bert/multi_cased_L-12_H-768_A-12", "-num_worker=4", "-max_seq_len=100"])
-      atexit.register(BertAsAServiceEmbedder.kill)
+      BertAsAServiceEmbedder._process = subprocess.Popen(["bert-serving-start", "-model_dir={}".format(model_dir), "-num_worker=4", "-max_seq_len=100"])
+      if autokill:
+        atexit.register(BertAsAServiceEmbedder.kill)
     self.client = BertClient()
 
   def embed(self, sentences):
@@ -50,20 +49,17 @@ class BertAsAServiceEmbedder:
     subprocess.call(["bert-serving-terminate", "-port=5555"])
     print("Killing Process")
     BertAsAServiceEmbedder._process.kill()
+    BertAsAServiceEmbedder._process = None
+
 
 class FastTextEmbedder:
   _loaded = {}
-  _imported = False
-  _imported_jeiba = False
 
-  def __init__(self, language):
-    if not FastTextEmbedder._imported:
-      import fastText_multilingual.fasttext as ft
-      FastTextEmbedder._imported = True
+  def __init__(self, language, **kwargs):
+    import fastText_multilingual.fasttext as ft
 
-    if not FastTextEmbedder._imported_jeiba and language == "zh":
+    if language == "zh":
       import jieba
-      FastTextEmbedder._imported_jeiba = True
     embedder = "wiki.{}.align.vec".format(language)
     if embedder not in FastTextEmbedder._loaded:
       FastTextEmbedder._loaded[embedder] = ft.FastVector(vector_file=path.join(resources_dir, "FastText", embedder))
@@ -105,8 +101,8 @@ class FastTextEmbedder:
             "unknown_vocab_seen": len(self.unknown_vocab)}
 
 
-def getEmbeddedResource(modelName, embedding, language, resourceName):
-  location = path.join(resources_dir, modelName, embedding, language)
+def getEmbeddedResource(modelName, embedding, language, resourceName, subname="", **kwargs):
+  location = path.join(resources_dir, modelName, embedding, language, subname)
   os.makedirs(location, exist_ok=True)
   resourcePath = path.join(location, resourceName)
   if path.exists(resourcePath):
@@ -115,40 +111,16 @@ def getEmbeddedResource(modelName, embedding, language, resourceName):
       return obj
 
   if embedding == "FastText":
-    en_embed = FastTextEmbedder("en")
-    b_embed = FastTextEmbedder(language)
-    data = get_data(resourceName, language)
-    out = []
-    for tuple in data:
-      e, b, s = tuple if resourceName != "test" else (*tuple, None)
-      e_embedded = en_embed.embed(e)
-      b_embedded = b_embed.embed(b)
-      out.append((e_embedded, b_embedded) if resourceName == "test" else (e_embedded, b_embedded, s))
-    print("en", en_embed.stats())
-    print(language, b_embed.stats())
+    out = getFastTextResource(language, resourceName, **kwargs)
     with open(resourcePath, "wb") as f:
       pickle.dump(out, f)
     return out
 
   elif embedding == "BertAsService":
-    embedder = BertAsAServiceEmbedder()
-    data = get_data(resourceName, language)
-    es = []
-    bs = []
-    ss = []
-    for tuple in data:
-      e, b, s = tuple if resourceName != "test" else (*tuple, None)
-      es.append(e)
-      bs.append(b)
-      ss.append(s)
-    es_array = embedder.embed(es)
-    bs_array = embedder.embed(bs)
-    out = []
-    for i in range(es_array.shape[0]):
-      if ss[0] is None:
-        out.append((es_array[i], bs_array[i]))
-      else:
-        out.append((es_array[i], bs_array[i], ss[i]))
+    if "MultiServerBert" in kwargs:
+      out = getBertAsServiceMultiServerResource(language, resourceName, **kwargs)
+    else:
+      out = getBertAsServiceSingleServerResource(language, resourceName, **kwargs)
 
     with open(resourcePath, "wb") as f:
       pickle.dump(out, f)
@@ -156,3 +128,66 @@ def getEmbeddedResource(modelName, embedding, language, resourceName):
 
   else:
     raise UnsupportedEmbeddingError("FastText")
+
+
+def getBertAsServiceSingleServerResource(language, resourceName, **kwargs):
+  embedder = BertAsAServiceEmbedder(**kwargs)
+  data = get_data(resourceName, language)
+  es = []
+  bs = []
+  ss = []
+  for tuple in data:
+    e, b, s = tuple if resourceName != "test" else (*tuple, None)
+    es.append(e)
+    bs.append(b)
+    ss.append(s)
+  es_array = embedder.embed(es)
+  bs_array = embedder.embed(bs)
+  out = []
+  for i in range(es_array.shape[0]):
+    if ss[0] is None:
+      out.append((es_array[i], bs_array[i]))
+    else:
+      out.append((es_array[i], bs_array[i], ss[i]))
+  return out
+
+def getBertAsServiceMultiServerResource(language, resourceName, **kwargs):
+  data = get_data(resourceName, language)
+  es = []
+  bs = []
+  ss = []
+  for tuple in data:
+    e, b, s = tuple if resourceName != "test" else (*tuple, None)
+    es.append(e)
+    bs.append(b)
+    ss.append(s)
+
+  a_embedder = BertAsAServiceEmbedder(model_dir=kwargs["MultiServerBert"][0], autokill=False, **kwargs)
+  es_array = a_embedder.embed(es)
+  BertAsAServiceEmbedder.kill()
+  b_embedder = BertAsAServiceEmbedder(model_dir=kwargs["MultiServerBert"][1], autokill=False, **kwargs)
+  bs_array = b_embedder.embed(bs)
+  BertAsAServiceEmbedder.kill()
+
+  out = []
+  for i in range(es_array.shape[0]):
+    if ss[0] is None:
+      out.append((es_array[i], bs_array[i]))
+    else:
+      out.append((es_array[i], bs_array[i], ss[i]))
+  return out
+
+
+def getFastTextResource(language, resourceName, **kwargs):
+  en_embed = FastTextEmbedder("en", **kwargs)
+  b_embed = FastTextEmbedder(language, **kwargs)
+  data = get_data(resourceName, language)
+  out = []
+  for tuple in data:
+    e, b, s = tuple if resourceName != "test" else (*tuple, None)
+    e_embedded = en_embed.embed(e)
+    b_embedded = b_embed.embed(b)
+    out.append((e_embedded, b_embedded) if resourceName == "test" else (e_embedded, b_embedded, s))
+  print("en", en_embed.stats())
+  print(language, b_embed.stats())
+  return out
