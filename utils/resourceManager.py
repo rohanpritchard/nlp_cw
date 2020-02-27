@@ -36,7 +36,7 @@ class BertAsAServiceEmbedder:
       BertAsAServiceEmbedder._imported = True
 
     if BertAsAServiceEmbedder._process is None:
-      BertAsAServiceEmbedder._process = subprocess.Popen(["bert-serving-start", "-model_dir=./bert/uncased_L-12_H-768_A-12", "-num_worker=4", "-max_seq_len=100"])
+      BertAsAServiceEmbedder._process = subprocess.Popen(["bert-serving-start", "-model_dir=./bert/multi_cased_L-12_H-768_A-12", "-num_worker=4", "-max_seq_len=100"])
       atexit.register(BertAsAServiceEmbedder.kill)
     self.client = BertClient()
 
