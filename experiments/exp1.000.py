@@ -41,7 +41,7 @@ criterion = torch.nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learningRate)
 batch_size = 100
 print("Starting training...")
-stats = StatsManager()
+stats = StatsManager("exp1.0000")
 
 for epoch in range(epochs):
     random.shuffle(data)

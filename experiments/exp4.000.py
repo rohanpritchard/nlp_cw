@@ -28,7 +28,7 @@ criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
 batch_size = 200
 print("Starting training...")
-stats = StatsManager()
+stats = StatsManager("exp4.000")
 
 val_a_normalized, val_a_len = normalize_embeddings([row[0] for row in val_data])
 val_b_normalized, val_b_len = normalize_embeddings([row[1] for row in val_data])

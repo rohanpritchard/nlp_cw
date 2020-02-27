@@ -3,7 +3,6 @@ This is experiment 2
 
 pretrained word embbedings, averaged to sentence, concat, scikit mlp
 
-
 """
 
 import numpy as np

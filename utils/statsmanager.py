@@ -1,4 +1,7 @@
+import os
+import time
 import warnings
+from os import path
 
 import torch
 import numpy as np
@@ -6,7 +9,7 @@ from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 
 class StatsManager:
-  def __init__(self):
+  def __init__(self, name=None):
     self.losses = []
     self.pearsons = []
     self.pearsons_val = []
@@ -17,6 +20,7 @@ class StatsManager:
     self.epoch = []
     self.epochs = 0
     self.batchs = 0
+    self.name = name
 
   def put(self, loss, outputs, labels):
     loss = loss.float().detach()
@@ -55,7 +59,7 @@ class StatsManager:
 
   def plot(self):
     plt.ioff()
-    fig = plt.figure()
+    fig = plt.figure(dpi=300)
     ax = fig.add_subplot()
     line1, = ax.plot(np.arange(self.batchs), self.losses, label="loss")
     line2, = ax.plot(np.arange(self.batchs), self.maes, label="mae")
@@ -65,6 +69,15 @@ class StatsManager:
     else:
       warnings.warn("peasons_val has not been populated, use 'computeValidation' after each epoch")
     ax.legend()
+
+    if self.name != None:
+      location = path.join("./stats", self.name)
+      os.makedirs(path.dirname(location), exist_ok=True)
+      fig.save_fig(location + ".png", dpi=fig.dpi)
+      with open(location, "a") as f:
+        f.write("{} - Final Pearson {}".format(time.ctime(), self.pearsons_val[-1]))
+
     plt.show()
+
 
 
